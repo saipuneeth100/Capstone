@@ -1,0 +1,611 @@
+
+Front End: HTML,CSS:
+
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="{% static 'animate.css' %}">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+<style type="text/css">
+      *{
+      	margin: 0;
+      	padding: 0;
+      	overflow-x: hidden;
+
+      	}
+.my-nav{position: relative;
+       top:20px;
+       width: 100%;
+       z-index: 999;
+       background:none;
+       border: none;
+       border-radius: 0;
+     
+ }
+ 
+.my-nav {
+  background-color:rgba(0,0,0,0.00);
+  border-color: rgba(0,0,0,0.00);
+}
+.my-nav .navbar-brand {
+  color: #ecf0f1;
+}
+.my-nav .navbar-brand:hover,
+.my-nav .navbar-brand:focus {
+  color: #ecdbff;
+}
+.my-nav .navbar-text {
+  color: #ecf0f1;
+}
+.my-nav .navbar-nav > li > a {
+  color: #ecf0f1;
+}
+.my-nav .navbar-nav > li > a:hover,
+.my-nav .navbar-nav > li > a:focus {
+  color: #ecdbff;
+}
+.my-nav .navbar-nav > .active > a,
+.my-nav .navbar-nav > .active > a:hover,
+.my-nav .navbar-nav > .active > a:focus {
+  color: #ecdbff;
+  background-color: #3962ff;
+}
+.my-nav .navbar-nav > .open > a,
+.my-nav .navbar-nav > .open > a:hover,
+.my-nav .navbar-nav > .open > a:focus {
+  color: #ecdbff;
+  background-color: #3962ff;
+}
+.my-nav .navbar-toggle {
+  border-color: #3962ff;
+}
+.my-nav .navbar-toggle:hover,
+.my-nav .navbar-toggle:focus {
+  background-color: #3962ff;
+}
+.my-nav .navbar-toggle .icon-bar {
+  background-color: #ecf0f1;
+}
+.my-nav .navbar-collapse,
+.my-nav .navbar-form {
+  border-color: #ecf0f1;
+}
+.my-nav .navbar-link {
+  color: #ecf0f1;
+}
+.my-nav .navbar-link:hover {
+  color: #ecdbff;
+}
+ 
+
+ 
+
+ 
+ 
+ 
+ 
+
+     
+    .navbar-default .navbar-toggle .icon-bar {
+    background-color: #ffffff !important;
+}
+     
+    .navbar .navbar-brand {
+  color: white;
+}
+    .navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus {
+  color:wheat;
+}
+    .my-nav{top:0;}
+    .navbar{margin-bottom: 0;}
+     
+.navbar-default .navbar-nav > li > a{color: black;}   /*link color change*/
+     
+.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
+    background-color:#000000;
+    color: #fffff0;
+}/*change link color*/
+ 
+     .navbar-default .navbar-nav .open .dropdown-menu>li>a, .navbar-default .navbar-nav .open .dropdown-menu {
+    background-color: black;
+    color:#ffffff;
+  }/*change dropdown link color*/
+    .navbar-default .navbar-toggle .icon-bar {
+    background-color: black;
+}/*icon bar color*/
+    .thumbnail{text-align: center;}
+     
+}
+
+
+
+    </style>
+
+</head>
+<body>
+
+
+
+
+<nav class="navbar my-nav navbar-default navbar-light bg-light">
+
+  <div class="container-fluid">
+
+    <div class="collapse navbar-collapse" id="defaultNavbar1">
+      <ul class="nav navbar-nav">
+
+      	
+        <li><a href="{% url 'analyse:analyse1' %}"><span class="sr-only">(current)</span></a></li>
+        
+      </ul>
+      <form class="navbar-form navbar-left" action="{% url 'analyse:analyse1' %}" method="post">
+      	{% csrf_token %}
+        <div style="margin-left: 650px;" class="form-group">
+          <input type="text" class="form-control" name="url" placeholder="Enter URL">
+        </div>
+        <button type="submit" class="btn btn-default">Analyse</button>
+      </form>
+      
+    </div>
+    <!-- /.navbar-collapse -->
+  </div>
+  <!-- /.container-fluid -->
+</nav>
+   
+  
+
+
+
+   
+  
+ 
+
+
+</body>
+</html>
+
+
+========================================================================================================================================
+
+Backend using python in django:
+
+
+from django.shortcuts import render
+from importlib import reload
+from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+from django.http import JsonResponse
+from .models import *
+import json
+import re
+from .utils import *
+
+# Create your views here.
+
+def analyse_data(request):
+	if request.method == 'POST':
+		data_features=['camera','battery','performance','storage','budget']
+		x=request.POST.get('url')
+		det=x.find('ref')
+		det2=x.find('product-reviews')+16
+		finalst=x[det2:det-1]
+		flag=False
+		objct=Features.objects.all()
+		if objct:
+			for i in objct:
+				if i.url==x:
+					flag=True
+		if flag==True:
+			default=[]
+			#pos_comment=[]
+			#neg_comment=[]
+			positive=""
+			negative=""
+			neutral=""
+			obj=Features.objects.get(url=x)
+			details_lst=obj.details.split(';')
+			details_lst.pop(0)
+			print(details_lst)
+
+			camera_pos,camera_neg,camera_neu,battery_pos,battery_neg,battery_neu,performance_pos,performance_neg,performance_neu,storage_pos,storage_neg,storage_neu,budget_pos,budget_neg,budget_neu,name,price,img_url,rating,details=obj.camera_pos,obj.camera_neg,obj.camera_neu,obj.battery_pos,obj.battery_neg,obj.battery_neu,obj.performance_pos,obj.performance_neg,obj.performance_neu,obj.storage_pos,obj.storage_neg,obj.storage_neu,obj.budget_pos,obj.budget_neg,obj.budget_neu,obj.name,obj.price,obj.img_url,obj.rating,details_lst
+			default.append(float(camera_pos))
+			default.append(float(camera_neu))
+			
+			default.append(float(camera_neg))
+			positive=str(int(float(camera_pos)))
+			negative=str(int(float(camera_neg)))
+			neutral=str(int(float(camera_neu)))
+
+			pos_comment=obj.positive_comment.split('/')
+			neg_comment=obj.negative_comment.split('/')
+
+
+
+		else:
+			details_lst=""
+			pos_comment_lst=""
+			neg_comment_lst=""
+			positive=""
+			negative=""
+			neutral=""
+			default=[]
+			#pos_comment=[]
+			#neg_comment=[]
+			obj=productjson(x)
+			#print("fdsfdfdfds")
+			camera_pos,camera_neg,camera_neu,battery_pos,battery_neg,battery_neu,performance_pos,performance_neg,performance_neu,storage_pos,storage_neg,storage_neu,budget_pos,budget_neg,budget_neu,name,price,img_url,rating,details,pos_comment,neg_comment=analyse()
+			for i in details:
+				details_lst=details_lst+" ; "+i
+			for j in pos_comment:
+				pos_comment_lst=pos_comment_lst+" / "+j
+			for k in neg_comment:
+				neg_comment_lst=neg_comment_lst+" / "+k
+
+			Features.objects.create(
+				camera_pos=camera_pos,
+				camera_neg=camera_neg,
+				camera_neu=camera_neu,
+				battery_pos=battery_pos,
+				battery_neg=battery_neg,
+				battery_neu=battery_neu,
+				performance_pos=performance_pos,
+				performance_neg=performance_neg,
+				performance_neu=performance_neu,
+				storage_pos=storage_pos,
+				storage_neg=storage_neg,
+				storage_neu=storage_neu,
+				budget_pos=budget_pos,
+				budget_neg=budget_neg,
+				budget_neu=budget_neu,
+				url=x,
+				name=name,
+				price=price,
+				img_url=img_url,
+				rating=rating,
+				details=details_lst,
+				unique_id=finalst,
+				positive_comment=pos_comment_lst,
+				negative_comment=neg_comment_lst,
+				)
+			default.append(float(camera_pos))
+			default.append(float(camera_neu))
+			default.append(float(camera_neg))
+			positive=str(int(float(camera_pos)))
+			negative=str(int(float(camera_neg)))
+			neutral=str(int(float(camera_neu)))
+			#pos_comment=obj.positive_comment.split('/')
+			#neg_comment=obj.negative_comment.split('/')
+		print(default)
+		labels=[0]
+		labels1='Camera'
+		#default1=[55 ,44]
+
+		return render(request,'analyse/analyse2.html',{
+			
+			'name':name,
+			'price':price,
+			'img_url':img_url,
+			'rating':rating,
+			'details':details,
+			'data_features':data_features,
+			'default':default,
+			'labels':labels,
+			'finalst':finalst,
+			'labels1':labels1,
+			'positive':positive,
+			'negative':negative,
+			'neutral':neutral,
+			'pos_comment':pos_comment,
+			'neg_comment':neg_comment,
+
+
+			}
+			)
+		
+	else:
+		obhome=Features.objects.all()
+
+		return  render(request, 'analyse/analyse1.html',{'obhome':obhome})
+
+
+
+
+=======================================================================================================================================================
+
+
+Web Scraping Code:
+
+
+import urllib.request
+import urllib.parse
+import urllib.error
+from bs4 import BeautifulSoup
+import ssl
+import json
+import os
+
+
+
+def productjson(ur):
+
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+   
+
+    #url=input("Enter Amazon Product Url- ")
+    url=ur
+    index=url.find('ref')
+    in1=url.find('product-reviews')
+    url1=url[:index]
+    print(url1)
+    urlarp='ref=cm_cr_arp_d_paging_btm_next_'
+    urlgetr='ref=cm_cr_getr_d_paging_btm_next_'
+    url3='?ie=UTF8&reviewerType=all_reviews&pageNumber='
+    url4='ie=UTF8&reviewerType=all_reviews&filterByStar=critical&pageNumber='
+    #x=os.listdir(None)
+    in1=url.find('product-reviews')
+    in2=url[:in1-1]
+    print(in2)
+    query=in2
+
+    st_url=""
+    st_url_lst=[]
+    for j in search(query, tld="co.in", num=10, stop=1, pause=2):
+        st_url_lst.append(j)
+    st_url=st_url_lst[0]
+    print(st_url)
+
+
+    lst=[]
+    product_json = {}
+    product_json['features']=[]
+    product_json['short-reviews'] = []
+    product_json['long-reviews'] = []
+    product_json['customer-name']=[]
+    product_json['neg-short-reviews'] = []
+    product_json['neg-long-reviews'] = []
+
+    page=1
+    page1=2
+
+    if page==1:
+        html = urllib.request.urlopen(url, context=ctx).read()
+        soup = BeautifulSoup(html, 'html.parser')
+        html = soup.prettify('utf-8')
+        
+        for spans in soup.findAll('span', attrs={'class': 'a-list-item'}):
+            name_of_product = spans.text.strip()
+            product_json['name1'] = name_of_product
+            break
+
+        # extract the image of the item 
+
+        for divs in soup.findAll('div', attrs={'id': 'rwImages_hidden'}):
+            for img_tag in divs.findAll('img', attrs={'style': 'display:none;'
+                                        }):
+                product_json['img-url'] = img_tag['src']
+                break
+        # average star rating of the product
+        for i_tags in soup.findAll('i',
+                                   attrs={'data-hook': 'average-star-rating'}):
+            for spans in i_tags.findAll('span', attrs={'class': 'a-icon-alt'}):
+                product_json['star-rating'] = spans.text.strip()
+                break
+        #number of customer reviews of the product
+        for spans in soup.findAll('span', attrs={'id': 'acrCustomerReviewText'
+                                  }):
+            if spans.text:
+                review_count = spans.text.strip()
+                product_json['customer-reviews-count'] = review_count
+                break
+
+       
+
+
+
+        for a_tags in soup.findAll('a',
+                                   attrs={'class': 'a-size-base a-link-normal review-title a-color-base review-title-content a-text-bold'
+                                   }):
+            short_review = a_tags.text.strip()
+            product_json['short-reviews'].append(short_review)
+
+
+        for divs in soup.findAll('span', attrs={'data-hook': 'review-body'
+                                 }):
+            long_review = divs.text.strip()
+            product_json['long-reviews'].append(long_review)
+
+
+        for spanss in soup.findAll('span',attrs={'class':'a-profile-name'}):
+            custname=spanss.text.strip()
+            #print(spanss)
+            #print(custname)
+            lst.append(custname)
+            
+            product_json['customer-name'].append(custname)
+
+        for features in soup.findAll('a',attrs={'class':'a-size-mini a-link-normal a-color-secondary'}):
+            feat=features.text.strip()
+            product_json['features'].append(feat)
+
+        
+        page+=1
+
+    if page>1:
+        while page<10:
+            url=url1+urlgetr+str(page)+url3+str(page)
+            try:
+                html = urllib.request.urlopen(url, context=ctx).read()
+                soup = BeautifulSoup(html, 'html.parser')
+                html = soup.prettify('utf-8')
+                
+                for spans in soup.findAll('span', attrs={'class': 'a-list-item'}):
+                    name_of_product = spans.text.strip()
+                    product_json['name1'] = name_of_product
+                    break
+
+                # extract the image of the item 
+
+                for divs in soup.findAll('div', attrs={'id': 'rwImages_hidden'}):
+                    for img_tag in divs.findAll('img', attrs={'style': 'display:none;'
+                                                }):
+                        product_json['img-url'] = img_tag['src']
+                        break
+                #  average star rating of the product
+                for i_tags in soup.findAll('i',
+                                           attrs={'data-hook': 'average-star-rating'}):
+                    for spans in i_tags.findAll('span', attrs={'class': 'a-icon-alt'}):
+                        product_json['star-rating'] = spans.text.strip()
+                        break
+                
+                for spans in soup.findAll('span', attrs={'id': 'acrCustomerReviewText'
+                                          }):
+                    if spans.text:
+                        review_count = spans.text.strip()
+                        product_json['customer-reviews-count'] = review_count
+                        break
+               
+
+
+                for a_tags in soup.findAll('a',
+                                           attrs={'class': 'a-size-base a-link-normal review-title a-color-base review-title-content a-text-bold'
+                                           }):
+                    short_review = a_tags.text.strip()
+                    product_json['short-reviews'].append(short_review)
+
+
+                for divs in soup.findAll('span', attrs={'data-hook': 'review-body'
+                                         }):
+                    long_review = divs.text.strip()
+                    product_json['long-reviews'].append(long_review)
+
+
+                for spanss in soup.findAll('span',attrs={'class':'a-profile-name'}):
+                    custname=spanss.text.strip()
+                    #print(spanss)
+                    #print(custname)
+                    lst.append(custname)
+                    
+                    product_json['customer-name'].append(custname)
+
+                for features in soup.findAll('a',attrs={'class':'a-size-mini a-link-normal a-color-secondary'}):
+                    feat=features.text.strip()
+                    product_json['features'].append(feat)
+
+                
+                page+=1
+            except:
+                page+=1
+
+    if page1>1:
+        while page1<10:
+            url=url1+urlgetr+str(page1)+url4+str(page1)
+            try:
+                html = urllib.request.urlopen(url, context=ctx).read()
+                soup = BeautifulSoup(html, 'html.parser')
+                html = soup.prettify('utf-8')
+                
+                for a_tags in soup.findAll('a',
+                                           attrs={'class': 'a-size-base a-link-normal review-title a-color-base review-title-content a-text-bold'
+                                           }):
+                    short_review = a_tags.text.strip()
+                    product_json['neg-short-reviews'].append(short_review)
+
+
+                for divs in soup.findAll('span', attrs={'data-hook': 'review-body'
+                                         }):
+                    long_review = divs.text.strip()
+                    product_json['neg-long-reviews'].append(long_review)
+
+
+               
+                
+                page1+=1
+            except:
+                page1+=1
+
+            
+            
+
+    with open('product.json', 'w') as outputfile:
+        json.dump(product_json, outputfile, indent=4)
+
+    html = urllib.request.urlopen(st_url, context=ctx).read()
+    soup = BeautifulSoup(html, 'html.parser')
+    html = soup.prettify('utf-8')
+    product_json_features = {}
+
+    for divs in soup.findAll('div', attrs={'class': 'a-size-large'}):
+        try:
+            product_json_features['brand'] = divs['data-brand']
+            break
+        except:
+            pass
+
+    for spans in soup.findAll('span', attrs={'id': 'productTitle'}):
+        name_of_product = spans.text.strip()
+        product_json_features['name'] = name_of_product
+        break
+
+    for divs in soup.findAll('div'):
+        try:
+            price = str(divs['data-asin-price'])
+            product_json_features['price'] = '$' + price
+            break
+        except:
+            pass
+
+
+    for divs in soup.findAll('div', attrs={'id': 'rwImages_hidden'}):
+        for img_tag in divs.findAll('img', attrs={'style': 'display:none;'
+                                    }):
+            product_json_features['img-url'] = img_tag['src']
+            break
+
+    for i_tags in soup.findAll('i',
+                               attrs={'data-hook': 'average-star-rating'}):
+        for spans in i_tags.findAll('span', attrs={'class': 'a-icon-alt'}):
+            product_json_features['star-rating'] = spans.text.strip()
+            break
+
+    for spans in soup.findAll('span', attrs={'id': 'acrCustomerReviewText'
+                              }):
+        if spans.text:
+            review_count = spans.text.strip()
+            product_json_features['customer-reviews-count'] = review_count
+            break
+
+    product_json_features['details'] = []
+    for ul_tags in soup.findAll('ul',
+                                attrs={'class': 'a-unordered-list a-vertical a-spacing-none'
+                                }):
+        for li_tags in ul_tags.findAll('li'):
+            for spans in li_tags.findAll('span',
+                    attrs={'class': 'a-list-item'}, text=True,
+                    recursive=False):
+                product_json_features['details'].append(spans.text.strip())
+
+
+
+    with open('output_file.html', 'wb') as file:
+        file.write(html)
+    with open('product.json_features', 'w') as outfile:
+        json.dump(product_json_features, outfile, indent=4)
+    print ('----------Extraction of data is complete----------')
+
+
+
+
+
+
+
+
